@@ -58,6 +58,7 @@ class Address (object):
         self.originRowId = origId
         self.geocodeResult = None
         self.isFound = False
+        self.foundMsg = ""
     
     def setGeocodeResult(self, geocodeResult, isFound):
         self.geocodeResult = geocodeResult
@@ -118,7 +119,8 @@ class ZipPlusFourTool(object):
                 address.geocodeResult.geoCoder,
                 score,
                 xCoord,
-                yCoord]
+                yCoord,
+                address.foundMsg]
         
         return outRow
     
@@ -198,6 +200,7 @@ class ZipPlusFourTool(object):
                 for zone in zonesAndAddresses:
                     for addr in zonesAndAddresses[zone]:
                         addr.isFound = False
+                        addr.foundMsg = "Multiple zones"
             elif len(zonesAndAddresses) == 2:
                 #choose the zone with the min number of addresses and set those addresses to not found
                 minZone = ""
@@ -208,7 +211,8 @@ class ZipPlusFourTool(object):
                         minZone = zone
                 
                 for addr in zonesAndAddresses[minZone]:
-                    addr.isFound = False                                  
+                    addr.isFound = False
+                    addr.foundMsg = "Double zone"                                  
                 
                 
                        
@@ -529,12 +533,16 @@ class ZipPlusFourTool(object):
             if addr.id in geocodeResults: 
                 if "Error:" in geocodeResults[addr.id].matchAddress:
                     addr.setGeocodeResult(geocodeResults[addr.id], False)
+                    addr.foundMsg = "Geocoder error"
                 elif float(geocodeResults[addr.id].score) < 85:
                     addr.setGeocodeResult(geocodeResults[addr.id], False)
+                    addr.foundMsg = "Low score"
                 elif  not self._areDirsEqual("{} {}".format(addr.houseNumber, addr.streetName), geocodeResults[addr.id].matchAddress):
-                    addr.setGeocodeResult(geocodeResults[addr.id], False) 
+                    addr.setGeocodeResult(geocodeResults[addr.id], False)
+                    addr.foundMsg = "Direction mismatch" 
                 elif  not self._areNumericsEqual("{} {}".format(addr.houseNumber, addr.streetName), geocodeResults[addr.id].matchAddress):
-                    addr.setGeocodeResult(geocodeResults[addr.id], False)        
+                    addr.setGeocodeResult(geocodeResults[addr.id], False)
+                    addr.foundMsg = "Number mismatch"        
                 else:
                     addr.setGeocodeResult(geocodeResults[addr.id], True)
                     

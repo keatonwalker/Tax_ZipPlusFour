@@ -7,8 +7,8 @@ import ZipPlusFourTool, arcpy, AddressTableParser, time
 
 
 apiKey = "AGRC-CB612714234155"
-inputTable = r"C:\KW_Working\Geocoder_Tools\Zip_plus4\TaxProject\testData\845_spaces.dbf"#r"C:\KW_Working\Geocoder_Tools\Zip_plus4\2012_11.mdb\ZIP4_845_Table_Tester"
-outputDirectory = r"C:\Users\Administrator\My Documents\Aptana Studio 3 Workspace\ZipPlusFourVisualizer\ToolModules\data\TestOutput\taxproject"#"C:\Users\kwalker\Documents\GitHub\ZipPlusFour\ToolModules\data"
+inputTable = r"C:\KW_Working\Geocoder_Tools\Zip_plus4\TaxProject\testData\test845.dbf"#r"C:\KW_Working\Geocoder_Tools\Zip_plus4\2012_11.mdb\ZIP4_845_Table_Tester"
+outputDirectory = r"C:\Users\kwalker\Documents\GitHub\Tax_ZipPlusFour\ToolModules\data\TestOutput\taxproject"#"C:\Users\kwalker\Documents\GitHub\ZipPlusFour\ToolModules\data"
 
     
 version = "1.1.0"

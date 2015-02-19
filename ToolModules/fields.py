@@ -52,13 +52,14 @@ class Output(Fields):
         self.score = "Score"
         self.xCoord = "X"
         self.yCoord = "Y"
+        self.nonMatchMsg = "nomatchmsg"
         #Line specific fields
         
     
         self._fieldList = (self.zipPlus4, self.type, self.match, 
                      self.originRowID, self.inputAddress, self.inputZone, 
                      self.matchAddress, self.matchZone, self.geocoder, 
-                     self.score, self.xCoord, self.yCoord)
+                     self.score, self.xCoord, self.yCoord, self.nonMatchMsg)
     
     def getLineFields(self):
         lineFields = []
@@ -85,7 +86,8 @@ class Output(Fields):
                         [self.geocoder, "TEXT", 50],
                         [self.score, "DOUBLE"],
                         [self.xCoord, "DOUBLE"],
-                        [self.yCoord, "DOUBLE"]]
+                        [self.yCoord, "DOUBLE"],
+                        [self.nonMatchMsg, "TEXT", 100]]
         
         for params in addFieldParams:
             textFieldLength = ""
