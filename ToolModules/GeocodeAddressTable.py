@@ -48,6 +48,7 @@ class Geocoder(object):
 
     def locateAddresses(self, formattedAddresses, **kwargs):
         """Returns a list of address that were matched."""
+        result = None
         try:
             kwargs["apiKey"] = self._api_key
             params = urllib.urlencode(kwargs)
@@ -60,12 +61,15 @@ class Geocoder(object):
             r = urllib2.urlopen(req)    
             response = json.load(r)
             result = response["result"]["addresses"]
-        except:
+            if r.getcode() is not 200 or response["status"] is not 200:
+                result = None
+        except Exception as e:
             print "!!!!!!!!exception!!!!!!!!!!!!!"
+            print e
             result = None
 
-        if r.getcode() is not 200 or response["status"] is not 200:
-            result = None
+#         if r.getcode() is not 200 or response["status"] is not 200:
+#             result = None
 
         return result
     

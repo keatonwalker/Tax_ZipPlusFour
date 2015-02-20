@@ -68,7 +68,7 @@ class Output(Fields):
             if i != 0:
                 fieldNum = str(i)        
             
-            for f in self._fieldList:
+            for f in self._fieldList[:-1]:#Slice to remove nonMatchMsg
                 lineFields.append(f + fieldNum)
         
         return lineFields
