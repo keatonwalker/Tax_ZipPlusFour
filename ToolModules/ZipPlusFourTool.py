@@ -89,7 +89,7 @@ class ZipPlusFourTool(object):
         arcpy.CreateFileGDB_management(self._outputDirectory, self._outputGdb, "CURRENT")
         self._outputGdb = os.path.join(self._outputDirectory, self._outputGdb)
         
-        self._zipTable = os.path.join(self._outputDirectory, self._outputGdb, "GdbZipTable")
+        self._zipTable = os.path.join(self._outputGdb, "GdbZipTable")
         arcpy.CopyRows_management(inputTable, self._zipTable)
         
         self._geocodeTable = "tempGeocode.csv"
@@ -185,6 +185,7 @@ class ZipPlusFourTool(object):
         outFields.addFieldsToLineFeature(lineFeature)
         
     def _checkPlusFourMismatchedZones(self, zipPlus4Areas):
+        """Handle the case of one zip plus four area's addresses being geocoded into more than one address zone(city or zip code)"""
         
         for plus4Area in zipPlus4Areas:
             print plus4Area._segSectorNum
@@ -217,6 +218,7 @@ class ZipPlusFourTool(object):
                 
                        
     def _createResultsFromAddrGroups(self, addrGroups):
+        """Process the address groups to create result tables, points and lines."""
         outFields = fields.Output()
         outConfig = configs.Output()
         
@@ -249,7 +251,6 @@ class ZipPlusFourTool(object):
             #Create a no matches result
             if len(foundAddrList) == 0:
                 noMatchList.append(self._createOuputRow(addrGroup._segSectorNum, "T", addrGroup.getAddresses()[0]))
-                #print "noMatchTable"
                 
             #Create a point result    
             elif len(foundAddrList) == 1:
@@ -257,7 +258,6 @@ class ZipPlusFourTool(object):
                 insertRow = self._createOuputRow(addrGroup._segSectorNum, "T", foundAddrList[0])
                 insertRow.append(xyPoint)                
                 pointList.append(insertRow)
-                #print "pointFeature"
                 
             #Create a line result    
             elif len(foundAddrList) > 1:                
@@ -268,27 +268,21 @@ class ZipPlusFourTool(object):
                 insertRow = self._createOuputLineRow(addrGroup._segSectorNum, "T", foundAddrList)
                 insertRow.append(line)
                 lineList.append(insertRow)
-                #Temp loop to show which addresses make up a line
-#                 for addr in foundAddrList:
-#                     insertRow = self._createOuputRow(addrGroup._segSectorNum, "T", addr)#foundAddrList[0])
-#                     insertRow.append(line)
-#                     lineList.append(insertRow)
-                    
-                #print "lineFeature"
         
         #Insert rows into zip+4 result table and features
+        #No match
         noMatchCursor = arcpy.da.InsertCursor(noMatchTable, outFields.getFields())
         for noM in noMatchList:
             noMatchCursor.insertRow(noM)
         del noMatchCursor
-
+        #Point 
         f = list(outFields.getFields())
         f.append("SHAPE@XY")                
         pointCursor = arcpy.da.InsertCursor(pointFeature, f)
         for p in pointList:
             pointCursor.insertRow(p)                     
         del pointCursor
-        
+        #line
         f = list(outFields.getLineFields())
         f.append("SHAPE@")                
         lineCursor = arcpy.da.InsertCursor(lineFeature, f)
@@ -299,87 +293,86 @@ class ZipPlusFourTool(object):
         print
                     
     
-    def _getZipPlusForNumbers(self, segmentLow, segmentHigh, sectorLow, sectorHigh):
-        "Uses the segment and sector numbers to build a list of zip plus four numbers"
-        zipPlusFours = []
-        segLow = int(segmentLow)
-        segHigh = int(segmentHigh)
-        secLow = int(sectorLow)
-        secHigh =  int(sectorHigh)
-        segmentRange = segHigh - segLow
-        sectorRange = secHigh - secLow
-        
-        for i in range(segmentRange + 1):
-            seg = "{0:02d}".format(segLow + i)
-            for j in range(sectorRange + 1):
-                plus4 = "{0}{1:02d}".format(seg, (secLow + j))
-                zipPlusFours.append(plus4)
-                plus4 = ""
-        
-        return zipPlusFours
+#     def _getZipPlusForNumbers(self, segmentLow, segmentHigh, sectorLow, sectorHigh):
+#         "Uses the segment and sector numbers to build a list of zip plus four numbers"
+#         zipPlusFours = []
+#         segLow = int(segmentLow)
+#         segHigh = int(segmentHigh)
+#         secLow = int(sectorLow)
+#         secHigh =  int(sectorHigh)
+#         segmentRange = segHigh - segLow
+#         sectorRange = secHigh - secLow
+#         
+#         for i in range(segmentRange + 1):
+#             seg = "{0:02d}".format(segLow + i)
+#             for j in range(sectorRange + 1):
+#                 plus4 = "{0}{1:02d}".format(seg, (secLow + j))
+#                 zipPlusFours.append(plus4)
+#                 plus4 = ""
+#         
+#         return zipPlusFours
 
-    def _getHouseNumbers(self, addressLowNum, addressHighNum):
-        """Creates house numbers from range between provided fields.
-        May return a list of: 
-            - [low]
-            - [low, high]
-            - [low, high, mid]"""
-        
-        #remove all non digit chars and strip leading zeros
-        #TODO clarify this formatting
-        lownum = ''.join(i for i in addressLowNum if i.isdigit())
-        lownum = str(int(lownum)).strip()
-        highnum = ''.join(i for i in addressHighNum if i.isdigit())
-        highnum = str(int(highnum)).strip()
-    
-        houseNumList = [str(int(lownum) + 2)]# + 2 Moves low number two away from the corner
-    
-        numdiff = int(highnum) - int(lownum)
-    
-        if numdiff > 0 and numdiff > 4:
-            houseNumList.append(str(int(highnum) - 2))# - 2 Moves high number two away from the corner
-        
-        elif numdiff > 0:
-            houseNumList.append(highnum)
-    
-        if numdiff > 40:
+#     def _getHouseNumbers(self, addressLowNum, addressHighNum):
+#         """Creates house numbers from range between provided fields.
+#         May return a list of: 
+#             - [low]
+#             - [low, high]
+#             - [low, high, mid]"""
+#         
+#         #remove all non digit chars and strip leading zeros
+#         lownum = ''.join(i for i in addressLowNum if i.isdigit())
+#         lownum = str(int(lownum)).strip()
+#         highnum = ''.join(i for i in addressHighNum if i.isdigit())
+#         highnum = str(int(highnum)).strip()
+#     
+#         houseNumList = [str(int(lownum) + 2)]# + 2 Moves low number two away from the corner
+#     
+#         numdiff = int(highnum) - int(lownum)
+#     
+#         if numdiff > 0 and numdiff > 4:
+#             houseNumList.append(str(int(highnum) - 2))# - 2 Moves high number two away from the corner
+#         
+#         elif numdiff > 0:
+#             houseNumList.append(highnum)
+#     
+#         if numdiff > 40:
+#             
+#             #TODO Why would neither of these be hit? Odd and even in range?
+#             #TODO Add some logic to hanld the 0 - 99 ranges
+#             if numdiff % 4 == 0:#This one seems unnecessary
+#                 midnum = str(int(lownum) + (numdiff/2))
+#                 houseNumList.append(midnum)
+#             elif numdiff % 2 == 0:
+#                 midnum = str(int(lownum) + (numdiff/2) + 1)
+#                 houseNumList.append(midnum)
+#         
+#         return houseNumList
             
-            #TODO Why would neither of these be hit? Odd and even in range?
-            #TODO Add some logic to hanld the 0 - 99 ranges
-            if numdiff % 4 == 0:#This one seems unnecessary
-                midnum = str(int(lownum) + (numdiff/2))
-                houseNumList.append(midnum)
-            elif numdiff % 2 == 0:
-                midnum = str(int(lownum) + (numdiff/2) + 1)
-                houseNumList.append(midnum)
         
-        return houseNumList
-            
-        
-    def _buildStreetName(self, preDir, streetName, stType, sufDir):
-        """Build the street name from parts that exist in many fields in input table"""
-        streetAddress = ""
-    
-        if not preDir == None:
-            if len(preDir) > 0:
-                streetAddress = preDir
-    
-        streetAddress = streetAddress + " " + streetName.strip()
-    
-        if not stType == None:
-            if len(stType) > 0:
-                streetAddress = streetAddress + " " + stType
-
-        if not sufDir == None:
-            if len(sufDir) > 0:
-                streetAddress = streetAddress + " " + sufDir
-    
-        #remove unnecessary character
-        for c in range(34,48):
-            streetAddress = streetAddress.replace(chr(c)," ")
-        streetAddress = streetAddress.replace("_"," ")
-        
-        return streetAddress
+#     def _buildStreetName(self, preDir, streetName, stType, sufDir):
+#         """Build the street name from parts that exist in many fields in input table"""
+#         streetAddress = ""
+#     
+#         if not preDir == None:
+#             if len(preDir) > 0:
+#                 streetAddress = preDir
+#     
+#         streetAddress = streetAddress + " " + streetName.strip()
+#     
+#         if not stType == None:
+#             if len(stType) > 0:
+#                 streetAddress = streetAddress + " " + stType
+# 
+#         if not sufDir == None:
+#             if len(sufDir) > 0:
+#                 streetAddress = streetAddress + " " + sufDir
+#     
+#         #remove unnecessary character
+#         for c in range(34,48):
+#             streetAddress = streetAddress.replace(chr(c)," ")
+#         streetAddress = streetAddress.replace("_"," ")
+#         
+#         return streetAddress
     
     def _getPreDirFromStreetName(self, streetName):
         preDir = ""
@@ -443,24 +436,7 @@ class ZipPlusFourTool(object):
             sufDirEqual = True
             
         return preDirEqual and sufDirEqual
-
-#     def _areDirsEqual(self, addrStreetName, geocodeStreetName):
-#         """Tests pre-directions in the address street name and the geocode result street name
-#         - Returns 2 for a street name with no predir
-#         -Returns 1 for matching predirs
-#         -Returns 0 for predirs that do not match"""
-#         addrPreDir = self._getPreDirFromStreetName(addrStreetName)
-#         geocodePreDir = self._getPreDirFromStreetName(geocodeStreetName)
-#         
-#         addrSufDir = self._getSufDirFromStreetName(addrStreetName)
-#         geocodeSufDir = self._getSufDirFromStreetName(geocodeStreetName)
-#         
-#         if addrPreDir.lower() == geocodePreDir.lower() and addrSufDir.lower() == geocodeSufDir.lower():
-#             return 1
-#         elif len(addrPreDir) > 1 or len(addrSufDir) > 1:
-#             return 2
-#         else:
-#             return 0
+    
         
     def _areNumericsEqual(self, addrStreetName, geocodeStreetName):
         """Checks if names are equal once all non-numeric characters have been removed.
@@ -505,12 +481,6 @@ class ZipPlusFourTool(object):
         geocodeResults = {}
         addressCsv = os.path.join(self._tempDirectory, "AddressesForGeocode.csv")
         self._createOuputFeatures()
-
-#         addrParser = AddressTableParser.AddressTableParser(self._zipTable)
-#         addrParser.getAddressListAndGrps(allAddresses, allAddressGroups)
-#         print allAddresses
-        #allAddresses = addrParser._addressList
-        #allAddressGroups = addrParser._addressGroups
                     
         #Create table from addresses and geocode it
         Address.createAddressCSV(allAddresses, addressCsv)
@@ -548,9 +518,9 @@ class ZipPlusFourTool(object):
                     
         self._checkPlusFourMismatchedZones(allAddressGroups)
         arcpy.AddMessage("Creating result tables")
-        #timer = ScriptRunTime.ScriptRunTime()
         self._createResultsFromAddrGroups(allAddressGroups)
-        #arcpy.AddMessage(timer.elapsedTime("sec"))
+        arcpy.AddMessage("Result tables complete")
+
                     
          
                 

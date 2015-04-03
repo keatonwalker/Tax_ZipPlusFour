@@ -53,9 +53,31 @@ def extractNewRecords():
         result = arcpy.GetCount_management(outTableView)
         count = int(result.getOutput(0))
         print count
-        arcpy.CopyRows_management(outTableView, outputFile)  
+        arcpy.CopyRows_management(outTableView, outputFile)
+        
+def addOrignalFieldsToResults():
+    gdb = r"C:\KW_Working\Geocoder_Tools\Zip_plus4\TaxProject\NewAddresses_Results\Results_20150222223115.gdb"
+    results = ["AddressesNotGeocoded", "Zip4Line", "Zip4NoMatch", "Zip4Point"]
+    resultJoinField = "OrigId"
+    originalTable = "GdbZipTable"
+    originalFields = ['Zip9', 'Zip5', 'RecType', 'PreDir', 'Name', 'Type', 'SufDir', 'LowAdd', 'HighAdd', 'EvenOdd', 'PrefKey', 'CoNbr']
+    originalJoinField = "OBJECTID" 
+    for r in results:
+        print r
+        arcpy.JoinField_management(os.path.join(gdb, r), resultJoinField,
+                                   os.path.join(gdb, originalTable), originalJoinField,
+                                   originalFields)
+def correctTypeFieldInResults():
+    gdb = r"C:\KW_Working\Geocoder_Tools\Zip_plus4\TaxProject\NewAddresses_Results\Results_20150222223115.gdb"
+    results = ["AddressesNotGeocoded", "Zip4Line", "Zip4NoMatch", "Zip4Point"]
+    for r in results:
+        print r
+        arcpy.DeleteField_management(os.path.join(gdb, r), "Type")
+        arcpy.AlterField_management(os.path.join(gdb, r), "Type_1", "Type")
      
 
 # createNameField("old")
 #joinOnCombinedName()
-extractNewRecords()
+#extractNewRecords()
+#addOrignalFieldsToResults()
+correctTypeFieldInResults()

@@ -14,8 +14,6 @@ class AddressTableParser (object):
     
     def __init__(self, addressTable):
         self._addressTable = addressTable
-#         self._addressList = ""
-#         self._addressGroups = ""
     
         
     def _getHouseNumbers(self, addressLowNum, addressHighNum):
@@ -26,7 +24,6 @@ class AddressTableParser (object):
             - [low, high, mid]"""
         
         #remove all non digit chars and strip leading zeros
-        #TODO clarify this formatting
         lownum = ''.join(i for i in addressLowNum if i.isdigit())
         lownum = str(int(lownum)).strip()
         highnum = ''.join(i for i in addressHighNum if i.isdigit())
@@ -44,9 +41,8 @@ class AddressTableParser (object):
     
         if numdiff > 40:
             
-            #TODO Why would neither of these be hit? Odd and even in range?
-            #TODO Add some logic to hanld the 0 - 99 ranges
-            if numdiff % 4 == 0:#This one seems unnecessary
+            #TODO Add some logic to handle the 0 - 99 ranges
+            if numdiff % 4 == 0:
                 midnum = str(int(lownum) + (numdiff/2))
                 houseNumList.append(midnum)
             elif numdiff % 2 == 0:
@@ -74,7 +70,7 @@ class AddressTableParser (object):
             if len(sufDir.strip()) > 0:
                 streetAddress = streetAddress + " " + sufDir
     
-        #remove unnecessary character
+        #remove unnecessary characters
         for c in range(34,48):
             streetAddress = streetAddress.replace(chr(c)," ")
         streetAddress = streetAddress.replace("_"," ")
