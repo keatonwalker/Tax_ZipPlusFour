@@ -46,3 +46,4 @@ ToolModules/data/TestOutput
 #PyDev
 .project
 .pydevproject
+.pyc

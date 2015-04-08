@@ -74,6 +74,36 @@ def correctTypeFieldInResults():
         print r
         arcpy.DeleteField_management(os.path.join(gdb, r), "Type")
         arcpy.AlterField_management(os.path.join(gdb, r), "Type_1", "Type")
+
+def addPlus4Fields():
+    inputFile = r"C:\GIS\Work\Geocoding\TaxProject\ConvertedCsvs\ZipFour_NewRecords.gdb"
+    inputFile = os.path.join(inputFile, "newRec_All")
+    fields = [('LowSegment', 4), ('HighSegment', 4), ('LowSector', 4), ('HighSector', 4),
+                   ('LowAddress', 20), ('HighAddress', 20), ('Zip', 10)]
+    
+#     for field in fields:
+#         arcpy.AddField_management(in_table = inputFile, field_name = field[0], 
+#                           field_type = "TEXT", field_length = field[1])
+        
+    updateFields = ['Zip9', 'Zip5', 'LowAdd', 'HighAdd']
+    updateFields.extend([f[0] for f in fields])
+    with arcpy.da.UpdateCursor(inputFile, updateFields) as cursor:
+        for row in cursor:
+            zip9 = str(row[0] or "")
+            zip5 = str(row[1] or "")
+            lowAddStr = str(row[2] or "")
+            highAddStr = str(row[3] or "")
+            
+            segment = zip9[5:-2]
+            sector = zip9[7:]
+            row[4] = segment
+            row[5] = segment
+            row[6] = sector
+            row[7] = sector
+            row[8] = lowAddStr
+            row[9] = highAddStr
+            row[10] = zip5
+            cursor.updateRow(row)
      
 
 # createNameField("old")
