@@ -3,7 +3,7 @@ Created on Mar 21, 2014
 
 @author: kwalker
 '''
-import arcpy, os, csv, imp, fields, configs, re, AddressTableParser
+import arcpy, os, csv, imp, re, fields, configs
 import copy
 from time import strftime
 from operator import attrgetter
@@ -292,87 +292,6 @@ class ZipPlusFourTool(object):
          
         print
                     
-    
-#     def _getZipPlusForNumbers(self, segmentLow, segmentHigh, sectorLow, sectorHigh):
-#         "Uses the segment and sector numbers to build a list of zip plus four numbers"
-#         zipPlusFours = []
-#         segLow = int(segmentLow)
-#         segHigh = int(segmentHigh)
-#         secLow = int(sectorLow)
-#         secHigh =  int(sectorHigh)
-#         segmentRange = segHigh - segLow
-#         sectorRange = secHigh - secLow
-#         
-#         for i in range(segmentRange + 1):
-#             seg = "{0:02d}".format(segLow + i)
-#             for j in range(sectorRange + 1):
-#                 plus4 = "{0}{1:02d}".format(seg, (secLow + j))
-#                 zipPlusFours.append(plus4)
-#                 plus4 = ""
-#         
-#         return zipPlusFours
-
-#     def _getHouseNumbers(self, addressLowNum, addressHighNum):
-#         """Creates house numbers from range between provided fields.
-#         May return a list of: 
-#             - [low]
-#             - [low, high]
-#             - [low, high, mid]"""
-#         
-#         #remove all non digit chars and strip leading zeros
-#         lownum = ''.join(i for i in addressLowNum if i.isdigit())
-#         lownum = str(int(lownum)).strip()
-#         highnum = ''.join(i for i in addressHighNum if i.isdigit())
-#         highnum = str(int(highnum)).strip()
-#     
-#         houseNumList = [str(int(lownum) + 2)]# + 2 Moves low number two away from the corner
-#     
-#         numdiff = int(highnum) - int(lownum)
-#     
-#         if numdiff > 0 and numdiff > 4:
-#             houseNumList.append(str(int(highnum) - 2))# - 2 Moves high number two away from the corner
-#         
-#         elif numdiff > 0:
-#             houseNumList.append(highnum)
-#     
-#         if numdiff > 40:
-#             
-#             #TODO Why would neither of these be hit? Odd and even in range?
-#             #TODO Add some logic to hanld the 0 - 99 ranges
-#             if numdiff % 4 == 0:#This one seems unnecessary
-#                 midnum = str(int(lownum) + (numdiff/2))
-#                 houseNumList.append(midnum)
-#             elif numdiff % 2 == 0:
-#                 midnum = str(int(lownum) + (numdiff/2) + 1)
-#                 houseNumList.append(midnum)
-#         
-#         return houseNumList
-            
-        
-#     def _buildStreetName(self, preDir, streetName, stType, sufDir):
-#         """Build the street name from parts that exist in many fields in input table"""
-#         streetAddress = ""
-#     
-#         if not preDir == None:
-#             if len(preDir) > 0:
-#                 streetAddress = preDir
-#     
-#         streetAddress = streetAddress + " " + streetName.strip()
-#     
-#         if not stType == None:
-#             if len(stType) > 0:
-#                 streetAddress = streetAddress + " " + stType
-# 
-#         if not sufDir == None:
-#             if len(sufDir) > 0:
-#                 streetAddress = streetAddress + " " + sufDir
-#     
-#         #remove unnecessary character
-#         for c in range(34,48):
-#             streetAddress = streetAddress.replace(chr(c)," ")
-#         streetAddress = streetAddress.replace("_"," ")
-#         
-#         return streetAddress
     
     def _getPreDirFromStreetName(self, streetName):
         preDir = ""

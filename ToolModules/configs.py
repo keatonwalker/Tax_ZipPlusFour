@@ -6,7 +6,8 @@ Created on Apr 30, 2014
 import arcpy
 
 class Output(object):
-    
+    """Class used to store field names from inputs and outputs.
+        - This class is a parent class for more specific field classes."""
     def __init__(self):
         self.addrProblemTable = "AddressesNotGeocoded"
         self.noMatchTable = "Zip4NoMatch"
